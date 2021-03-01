@@ -36,58 +36,63 @@ namespace ContainerStack
             }
         }
     }
-    [HarmonyPatch(typeof(Piece), "Awake")]
+    [HarmonyPatch(typeof(ZNetScene), "Awake")]
     public static class AddContainerComponentPatch
     {
-        private static void Prefix(ref Piece __instance)
+        private static void Prefix(ref ZNetScene __instance)
         {
-            var go = __instance.gameObject;
-            var player = Player.m_localPlayer;
-            PieceTable hammerTable = null;
-            var tables = new List<PieceTable>();
-            player.GetInventory().GetAllPieceTables(tables);
-            foreach (var table in tables)
+            UnityEngine.GameObject stackPrefab = null;
+            UnityEngine.GameObject pilePrefab = null;
+            UnityEngine.GameObject chestPrefab = null;
+            foreach (var prefab in __instance.m_prefabs)
             {
-                if (table.name.StartsWith("_Hammer"))
+                if (prefab.name.Contains("wood_stack"))
                 {
-                    hammerTable = table;
+                    stackPrefab = prefab;
+                }
+                if (prefab.name.Contains("stone_pile"))
+                {
+                    pilePrefab = prefab;
+                }
+                if (prefab.name.Contains("piece_chest_wood"))
+                {
+                    chestPrefab = prefab;
                 }
             }
-            var piece = hammerTable.m_pieces.First(p => p.name.StartsWith("piece_chest_wood"));
-            if (go.name.Contains("wood_stack"))
-            {
-                var conToCopy = (Container)piece.GetComponent(typeof(Container));
-                Container container = (Container)go.AddComponent(typeof(Container));
-                container.m_name = "Wood Stack";
-                container.m_privacy = conToCopy.m_privacy;
-                container.m_checkGuardStone = conToCopy.m_checkGuardStone;
-                container.m_autoDestroyEmpty = conToCopy.m_autoDestroyEmpty;
-                container.m_defaultItems = conToCopy.m_defaultItems;
-                container.m_open = conToCopy.m_open;
-                container.m_closed = conToCopy.m_closed;
-                container.m_openEffects = conToCopy.m_openEffects;
-                container.m_closeEffects = conToCopy.m_closeEffects;
-                FieldInfo inventoryField = typeof(Container).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance);
-                inventoryField.SetValue(container, new Inventory(container.m_name, conToCopy.m_bkg, 5, 3));
 
-            }
-            if (go.name.Contains("stone_pile"))
+            var conToCopy = (Container)chestPrefab.GetComponent(typeof(Container));
+            //FieldInfo inventoryField = typeof(Container).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance);
+            Container stackContainer = (Container)stackPrefab.GetComponent(typeof(Container));
+            if (stackContainer == null)
             {
-                var conToCopy = (Container)piece.GetComponent(typeof(Container));
-                Container container = (Container)go.AddComponent(typeof(Container));
-                container.m_name = "Stone Pile";
-                container.m_privacy = conToCopy.m_privacy;
-                container.m_checkGuardStone = conToCopy.m_checkGuardStone;
-                container.m_autoDestroyEmpty = conToCopy.m_autoDestroyEmpty;
-                container.m_defaultItems = conToCopy.m_defaultItems;
-                container.m_open = conToCopy.m_open;
-                container.m_closed = conToCopy.m_closed;
-                container.m_openEffects = conToCopy.m_openEffects;
-                container.m_closeEffects = conToCopy.m_closeEffects;
-                FieldInfo inventoryField = typeof(Container).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance);
-                inventoryField.SetValue(container, new Inventory(container.m_name, conToCopy.m_bkg, 5, 3));
-
+                stackContainer = (Container)stackPrefab.AddComponent(typeof(Container));
+                stackContainer.m_name = "Wood Stack";
+                stackContainer.m_privacy = conToCopy.m_privacy;
+                stackContainer.m_checkGuardStone = conToCopy.m_checkGuardStone;
+                stackContainer.m_autoDestroyEmpty = conToCopy.m_autoDestroyEmpty;
+                stackContainer.m_defaultItems = conToCopy.m_defaultItems;
+                stackContainer.m_open = conToCopy.m_open;
+                stackContainer.m_closed = conToCopy.m_closed;
+                stackContainer.m_openEffects = conToCopy.m_openEffects;
+                stackContainer.m_closeEffects = conToCopy.m_closeEffects;
+                
             }
+            //inventoryField.SetValue(stackContainer, new Inventory(stackContainer.m_name, conToCopy.m_bkg, 5, 3));
+            Container pileContainer = (Container)pilePrefab.GetComponent(typeof(Container));
+            if (pileContainer == null)
+            {
+                pileContainer = (Container)pilePrefab.AddComponent(typeof(Container));
+                pileContainer.m_name = "Stone Pile";
+                pileContainer.m_privacy = conToCopy.m_privacy;
+                pileContainer.m_checkGuardStone = conToCopy.m_checkGuardStone;
+                pileContainer.m_autoDestroyEmpty = conToCopy.m_autoDestroyEmpty;
+                pileContainer.m_defaultItems = conToCopy.m_defaultItems;
+                pileContainer.m_open = conToCopy.m_open;
+                pileContainer.m_closed = conToCopy.m_closed;
+                pileContainer.m_openEffects = conToCopy.m_openEffects;
+                pileContainer.m_closeEffects = conToCopy.m_closeEffects;
+            }
+            //inventoryField.SetValue(pileContainer, new Inventory(pileContainer.m_name, conToCopy.m_bkg, 5, 3));
         }
     }
 }
