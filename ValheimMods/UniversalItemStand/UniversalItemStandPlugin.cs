@@ -42,23 +42,7 @@ namespace UniversalItemStand
     {
         private static void Postfix(ref ItemStand __instance, ref ItemDrop.ItemData item, ref Boolean __result)
         {
-            Transform transform = item.m_dropPrefab.transform.Find("attach");
-            GameObject gameObject = null;
-            if ((bool)(UnityEngine.Object)transform)
-            {
-                gameObject = transform.gameObject;
-            }
-            else
-            {
-                List<Transform> transforms = new List<Transform>(); 
-                foreach (Transform child in item.m_dropPrefab.transform)
-                {
-                    transforms.Add(child);
-                }
-                var foundTransform = transforms.FirstOrDefault<Transform>(t => t.gameObject != null);
-                gameObject = foundTransform.gameObject;
-            }
-            __result = !(gameObject == null);
+            __result = true;
         }
     }
     [HarmonyPatch(typeof(ItemStand), "GetAttachPrefab")]
@@ -66,7 +50,6 @@ namespace UniversalItemStand
     {
         private static void Postfix(ref ItemStand __instance, ref GameObject item, ref GameObject __result)
         {
-
             GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(item.name);
             Transform transform = itemPrefab.transform.Find("attach");
             if ((bool)(UnityEngine.Object)transform)

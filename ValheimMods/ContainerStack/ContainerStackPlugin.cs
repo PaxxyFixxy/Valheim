@@ -15,6 +15,8 @@ namespace ContainerStack
     public class ContainerStackPlugin : BaseUnityPlugin
     {
         private ConfigEntry<bool> configEnableMod;
+        static public ConfigEntry<int> configContainerWidth;
+        static public ConfigEntry<int> configContainerHeight;
         private static readonly Harmony harmony = new Harmony("mod.containerstack");
 
         void Awake()
@@ -23,6 +25,14 @@ namespace ContainerStack
                                                 "enableMod",
                                                 true,
                                                 "Whether or not to enable the patch");
+            configContainerWidth = Config.Bind("General.Values",
+                                    "containerWidth",
+                                    3,
+                                    "The container width for wood stack and stone pile");
+            configContainerHeight = Config.Bind("General.Values",
+                                    "containerHeight",
+                                    3,
+                                    "The container height for wood stack and stone pile");
             if (configEnableMod.Value)
             {
                 harmony.PatchAll();
@@ -44,6 +54,7 @@ namespace ContainerStack
             UnityEngine.GameObject stackPrefab = null;
             UnityEngine.GameObject pilePrefab = null;
             UnityEngine.GameObject chestPrefab = null;
+
             foreach (var prefab in __instance.m_prefabs)
             {
                 if (prefab.name.Contains("wood_stack"))
@@ -61,11 +72,15 @@ namespace ContainerStack
             }
 
             var conToCopy = (Container)chestPrefab.GetComponent(typeof(Container));
-            //FieldInfo inventoryField = typeof(Container).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo widthField = typeof(Container).GetField("m_width", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo heightField = typeof(Container).GetField("m_height", BindingFlags.NonPublic | BindingFlags.Instance);
+
             Container stackContainer = (Container)stackPrefab.GetComponent(typeof(Container));
             if (stackContainer == null)
             {
                 stackContainer = (Container)stackPrefab.AddComponent(typeof(Container));
+                stackContainer.m_width = 5;
+                stackContainer.m_height = 3;
                 stackContainer.m_name = "Wood Stack";
                 stackContainer.m_privacy = conToCopy.m_privacy;
                 stackContainer.m_checkGuardStone = conToCopy.m_checkGuardStone;
@@ -77,11 +92,18 @@ namespace ContainerStack
                 stackContainer.m_closeEffects = conToCopy.m_closeEffects;
                 
             }
-            //inventoryField.SetValue(stackContainer, new Inventory(stackContainer.m_name, conToCopy.m_bkg, 5, 3));
+            else
+            {
+                stackContainer.m_width = ContainerStackPlugin.configContainerWidth.Value;
+                stackContainer.m_height = ContainerStackPlugin.configContainerHeight.Value;
+            }
             Container pileContainer = (Container)pilePrefab.GetComponent(typeof(Container));
+
             if (pileContainer == null)
             {
                 pileContainer = (Container)pilePrefab.AddComponent(typeof(Container));
+                pileContainer.m_width = 5;
+                pileContainer.m_height = 3;
                 pileContainer.m_name = "Stone Pile";
                 pileContainer.m_privacy = conToCopy.m_privacy;
                 pileContainer.m_checkGuardStone = conToCopy.m_checkGuardStone;
@@ -92,7 +114,11 @@ namespace ContainerStack
                 pileContainer.m_openEffects = conToCopy.m_openEffects;
                 pileContainer.m_closeEffects = conToCopy.m_closeEffects;
             }
-            //inventoryField.SetValue(pileContainer, new Inventory(pileContainer.m_name, conToCopy.m_bkg, 5, 3));
+            else
+            {
+                stackContainer.m_width = ContainerStackPlugin.configContainerWidth.Value;
+                stackContainer.m_height = ContainerStackPlugin.configContainerHeight.Value;
+            }
         }
     }
 }

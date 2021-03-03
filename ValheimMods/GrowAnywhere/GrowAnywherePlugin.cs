@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using BepInEx;
@@ -35,26 +36,20 @@ namespace GrowAnywhere
             }
         }
     }
-    [HarmonyPatch(typeof(Plant), "UpdateHealth")]
-    public static class ModifyPlantGrowBiom
+    [HarmonyPatch(typeof(ZNetScene), "Awake")]
+    public static class ModifyPlantGrow
     {
-        private static void Prefix(ref Plant __instance)
+        private static void Prefix(ref ZNetScene __instance)
         {
-            Heightmap heightmap = Heightmap.FindHeightmap(__instance.transform.position);
-            Heightmap.Biome biome = heightmap.GetBiome(__instance.transform.position);
-            if (biome != (Heightmap.Biome.Mountain | Heightmap.Biome.Ocean))
+            foreach (var prefab in __instance.m_prefabs)
             {
-                __instance.m_biome = biome;
+                if (prefab.name.ToLower().Contains("sapling"))
+                {
+                    var plant = prefab.GetComponent<Plant>();
+                    plant.m_biome = (Heightmap.Biome)25;
+                    plant.m_growRadius = 0.0f;
+                }
             }
-
-        }
-    }
-    [HarmonyPatch(typeof(Plant), "HaveGrowSpace")]
-    public static class ModifyPlantGrowSpace
-    {
-        private static void Postfix(ref Boolean __result)
-        {
-            __result = true;
         }
     }
 }
